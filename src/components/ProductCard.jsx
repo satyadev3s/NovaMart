@@ -1,9 +1,9 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/currency";
-import { Heart, Star, ShoppingBag } from "lucide-react";
+import { Heart, Star, ShoppingBag, ArrowRight } from "lucide-react";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, showActions = true }) {
   const { addToCart, wishlist, toggleWishlist, addToast } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,15 +56,17 @@ export default function ProductCard({ product }) {
           )}
         </div>
 
-        {/* Wishlist Heart Button */}
-        <button
-          className={`btn-wishlist ${isSaved ? "active" : ""}`}
-          onClick={handleToggleWishlist}
-          aria-label={isSaved ? "Remove from wishlist" : "Save to wishlist"}
-          title={isSaved ? "Remove from wishlist" : "Save to wishlist"}
-        >
-          <Heart size={18} fill={isSaved ? "currentColor" : "none"} />
-        </button>
+        {/* Wishlist Heart Button - only shown when showActions is true */}
+        {showActions && (
+          <button
+            className={`btn-wishlist ${isSaved ? "active" : ""}`}
+            onClick={handleToggleWishlist}
+            aria-label={isSaved ? "Remove from wishlist" : "Save to wishlist"}
+            title={isSaved ? "Remove from wishlist" : "Save to wishlist"}
+          >
+            <Heart size={18} fill={isSaved ? "currentColor" : "none"} />
+          </button>
+        )}
       </div>
 
       <div className="product-card-content">
@@ -93,14 +95,26 @@ export default function ProductCard({ product }) {
             )}
           </div>
 
-          <button
-            className="btn-quick-add"
-            onClick={handleAddToCart}
-            title="Add to shopping bag"
-          >
-            <ShoppingBag size={14} />
-            <span>Add</span>
-          </button>
+          {showActions ? (
+            <button
+              className="btn-quick-add"
+              onClick={handleAddToCart}
+              title="Add to shopping bag"
+            >
+              <ShoppingBag size={14} />
+              <span>Add</span>
+            </button>
+          ) : (
+            <Link
+              to={`/products/${product.id}`}
+              className="btn btn-outline btn-sm"
+              style={{ fontSize: "12px", padding: "5px 12px" }}
+              title="View product details"
+            >
+              <span>View</span>
+              <ArrowRight size={13} />
+            </Link>
+          )}
         </div>
       </div>
     </article>

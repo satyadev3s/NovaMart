@@ -184,7 +184,7 @@ export default function Landing() {
           </Link>
         </div>
 
-        <ProductGrid products={featuredProducts} />
+        <ProductGrid products={featuredProducts} showActions={false} />
       </section>
 
       {/* Luxury Promo Banner */}
@@ -222,7 +222,7 @@ export default function Landing() {
           </Link>
         </div>
 
-        <ProductGrid products={bestsellers} />
+        <ProductGrid products={bestsellers} showActions={false} />
       </section>
 
       {/* Value Pillars Strip */}
