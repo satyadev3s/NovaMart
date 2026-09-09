@@ -92,14 +92,8 @@ export default function Navbar() {
                   <NavLink to="/products" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
                     Shop All
                   </NavLink>
-                  <NavLink to="/wishlist" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-                    Wishlist
-                  </NavLink>
-                  <NavLink to="/cart" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-                    My Bag ({cartCount})
-                  </NavLink>
                   <NavLink to="/profile" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-                    My Account
+                    My Orders
                   </NavLink>
                 </>
               )}

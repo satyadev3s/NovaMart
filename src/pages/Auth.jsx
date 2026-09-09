@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
-import { Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, CheckCircle2, UserCheck } from "lucide-react";
+import { Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 
 function finishLogin(navigate, location, addToCart, addToast) {
   localStorage.setItem("novamart-user", "true");
@@ -58,7 +58,6 @@ export function Login() {
   );
 
   const pendingItem = location.state?.pendingItem;
-  const accounts = getAccounts();
 
   useEffect(() => {
     if (registeredEmail) {
@@ -83,12 +82,6 @@ export function Login() {
     setError("");
   }
 
-  function handleFillAccount(acc) {
-    setEmail(acc.email);
-    setPassword(acc.password);
-    setError("");
-    setSuccessMsg(`Selected account: ${acc.name}`);
-  }
 
   function submit(e) {
     e.preventDefault();
@@ -168,39 +161,13 @@ export function Login() {
             </div>
           )}
 
-          {/* Registered Accounts Quick-Access Chips */}
-          {accounts.length > 0 && (
-            <div style={{ marginBottom: "18px", background: "var(--slate-50)", padding: "12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, color: "var(--slate-700)", marginBottom: "8px" }}>
-                <UserCheck size={14} color="var(--brand-600)" />
-                <span>Saved / Registered Accounts:</span>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                {accounts.map((acc) => (
-                  <button
-                    key={acc.email}
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    style={{ fontSize: "11px", padding: "4px 8px", backgroundColor: "var(--white)" }}
-                    onClick={() => handleFillAccount(acc)}
-                    title={`Click to fill ${acc.email}`}
-                  >
-                    <span>{acc.name} ({acc.email})</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 1-Click Demo Helper if no custom accounts yet */}
-          {accounts.length === 0 && (
-            <div className="demo-account-hint">
-              <span>Fast test? Use preloaded demo account.</span>
-              <button type="button" onClick={handleDemoFill}>
-                1-Click Demo Fill
-              </button>
-            </div>
-          )}
+          {/* 1-Click Demo Helper */}
+          <div className="demo-account-hint">
+            <span>Fast test? Use preloaded demo account.</span>
+            <button type="button" onClick={handleDemoFill}>
+              1-Click Demo Fill
+            </button>
+          </div>
 
           {error && (
             <div className="form-error-banner" style={{ marginBottom: "16px" }}>
