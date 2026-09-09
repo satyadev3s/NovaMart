@@ -19,9 +19,19 @@ const FREE_SHIPPING_LIMIT = 5000;
 const SHIPPING_FEE = 499;
 
 export default function Cart() {
-  const { cart, updateQuantity, removeFromCart, coupon, applyCoupon, removeCoupon } = useCart();
+  const { cart, updateQuantity, removeFromCart, coupon, applyCoupon, removeCoupon, addToast } = useCart();
   const [couponInput, setCouponInput] = useState("");
   const navigate = useNavigate();
+  const isLoggedIn = localStorage.getItem("novamart-user") === "true";
+
+  const handleProceedToCheckout = () => {
+    if (!isLoggedIn) {
+      addToast("Please sign in or register to proceed to checkout", "info");
+      navigate("/login", { state: { from: { pathname: "/checkout" } } });
+      return;
+    }
+    navigate("/checkout");
+  };
 
   const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const discountAmount = coupon ? Math.round((subtotal * coupon.discountPercent) / 100) : 0;
@@ -186,10 +196,14 @@ export default function Cart() {
             <span className="total-amount">{formatPrice(grandTotal)}</span>
           </div>
 
-          <Link to="/checkout" className="btn btn-primary btn-full btn-lg">
+          <button
+            type="button"
+            onClick={handleProceedToCheckout}
+            className="btn btn-primary btn-full btn-lg"
+          >
             <span>Proceed to Checkout</span>
             <ArrowRight size={16} />
-          </Link>
+          </button>
 
           <div style={{ marginTop: "16px", textAlign: "center" }}>
             <Link to="/products" className="btn-ghost" style={{ fontSize: "13px", fontWeight: 600 }}>

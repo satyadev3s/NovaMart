@@ -1,11 +1,43 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/currency";
-import { Heart, Star, ShoppingBag, ArrowUpRight } from "lucide-react";
+import { Heart, Star, ShoppingBag } from "lucide-react";
 
 export default function ProductCard({ product }) {
-  const { addToCart, wishlist, toggleWishlist } = useCart();
+  const { addToCart, wishlist, toggleWishlist, addToast } = useCart();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const isSaved = wishlist.some((item) => item.id === product.id);
+  const isLoggedIn = localStorage.getItem("novamart-user") === "true";
+
+  const handleAddToCart = () => {
+    if (!isLoggedIn) {
+      addToast("Please sign in or register to add items to your bag", "info");
+      navigate("/login", {
+        state: {
+          from: location,
+          pendingItem: product,
+          pendingQty: 1,
+        },
+      });
+      return;
+    }
+    addToCart(product);
+  };
+
+  const handleToggleWishlist = () => {
+    if (!isLoggedIn) {
+      addToast("Please sign in or register to save items to wishlist", "info");
+      navigate("/login", {
+        state: {
+          from: location,
+        },
+      });
+      return;
+    }
+    toggleWishlist(product);
+  };
 
   return (
     <article className="product-card">
@@ -27,7 +59,7 @@ export default function ProductCard({ product }) {
         {/* Wishlist Heart Button */}
         <button
           className={`btn-wishlist ${isSaved ? "active" : ""}`}
-          onClick={() => toggleWishlist(product)}
+          onClick={handleToggleWishlist}
           aria-label={isSaved ? "Remove from wishlist" : "Save to wishlist"}
           title={isSaved ? "Remove from wishlist" : "Save to wishlist"}
         >
@@ -63,7 +95,7 @@ export default function ProductCard({ product }) {
 
           <button
             className="btn-quick-add"
-            onClick={() => addToCart(product)}
+            onClick={handleAddToCart}
             title="Add to shopping bag"
           >
             <ShoppingBag size={14} />

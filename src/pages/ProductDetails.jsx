@@ -1,4 +1,4 @@
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { products } from "../data/products";
 import { useCart } from "../context/CartContext";
@@ -21,11 +21,14 @@ import {
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const product = products.find((item) => item.id === Number(id));
-  const { addToCart, wishlist, toggleWishlist } = useCart();
+  const { addToCart, wishlist, toggleWishlist, addToast } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [openAccordion, setOpenAccordion] = useState("features");
+
+  const isLoggedIn = localStorage.getItem("novamart-user") === "true";
 
   if (!product) {
     return (
@@ -47,9 +50,48 @@ export default function ProductDetails() {
     .filter((item) => item.category === product.category && item.id !== product.id)
     .slice(0, 4);
 
+  const handleAddToCart = () => {
+    if (!isLoggedIn) {
+      addToast("Please sign in or register to add items to your bag", "info");
+      navigate("/login", {
+        state: {
+          from: location,
+          pendingItem: product,
+          pendingQty: quantity,
+        },
+      });
+      return;
+    }
+    addToCart(product, quantity);
+  };
+
   const handleBuyNow = () => {
+    if (!isLoggedIn) {
+      addToast("Please sign in or register to proceed to checkout", "info");
+      navigate("/login", {
+        state: {
+          from: { pathname: "/checkout" },
+          pendingItem: product,
+          pendingQty: quantity,
+        },
+      });
+      return;
+    }
     addToCart(product, quantity, false);
     navigate("/checkout");
+  };
+
+  const handleToggleWishlist = () => {
+    if (!isLoggedIn) {
+      addToast("Please sign in or register to save items to wishlist", "info");
+      navigate("/login", {
+        state: {
+          from: location,
+        },
+      });
+      return;
+    }
+    toggleWishlist(product);
   };
 
   const isLowStock = product.stock <= 8;
@@ -150,7 +192,7 @@ export default function ProductDetails() {
 
             <button
               className="btn btn-primary btn-lg"
-              onClick={() => addToCart(product, quantity)}
+              onClick={handleAddToCart}
               style={{ flex: "1 1 180px" }}
             >
               <ShoppingBag size={18} />
@@ -168,7 +210,7 @@ export default function ProductDetails() {
 
             <button
               className={`btn btn-outline btn-lg ${isSaved ? "active" : ""}`}
-              onClick={() => toggleWishlist(product)}
+              onClick={handleToggleWishlist}
               aria-label={isSaved ? "Saved to wishlist" : "Save to wishlist"}
               title="Save to wishlist"
             >

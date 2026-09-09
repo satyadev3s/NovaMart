@@ -1,10 +1,27 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useCart } from "../context/CartContext";
 import { Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 
-function finishLogin(navigate, from) {
+function finishLogin(navigate, location, addToCart, addToast) {
   localStorage.setItem("novamart-user", "true");
-  navigate(from || "/products", { replace: true });
+
+  if (location?.state?.pendingItem && addToCart) {
+    addToCart(location.state.pendingItem, location.state.pendingQty || 1, false);
+    if (addToast) {
+      addToast(`Welcome! Added "${location.state.pendingItem.title}" to your bag.`, "success");
+    }
+  }
+
+  const from = location?.state?.from;
+  let target = "/products";
+  if (typeof from === "string") {
+    target = from;
+  } else if (from?.pathname) {
+    target = `${from.pathname}${from.search || ""}`;
+  }
+
+  navigate(target, { replace: true });
 }
 
 const getAccounts = () => {
@@ -18,11 +35,14 @@ const getAccounts = () => {
 export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { addToCart, addToast } = useCart();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+
+  const pendingItem = location.state?.pendingItem;
 
   function handleDemoFill() {
     setEmail("alex.morgan@example.com");
@@ -68,8 +88,7 @@ export function Login() {
       JSON.stringify({ name: account.name, email: account.email, phone: account.phone })
     );
 
-    const from = location.state?.from;
-    finishLogin(navigate, from ? `${from.pathname}${from.search}` : undefined);
+    finishLogin(navigate, location, addToCart, addToast);
   }
 
   return (
@@ -94,7 +113,11 @@ export function Login() {
             <Sparkles size={12} /> Sign In
           </span>
           <h2>Welcome Back</h2>
-          <p className="desc">Enter your details to access your account & orders.</p>
+          <p className="desc">
+            {pendingItem
+              ? `Sign in or register to add "${pendingItem.title}" to your cart.`
+              : "Enter your details to access your account & orders."}
+          </p>
 
           {/* 1-Click Demo Helper */}
           <div className="demo-account-hint">
@@ -167,7 +190,11 @@ export function Login() {
 
             <p style={{ textAlign: "center", fontSize: "14px", color: "var(--slate-500)", marginTop: "12px" }}>
               New to NovaMart?{" "}
-              <Link to="/register" style={{ color: "var(--brand-700)", fontWeight: 600 }}>
+              <Link
+                to="/register"
+                state={location.state}
+                style={{ color: "var(--brand-700)", fontWeight: 700, textDecoration: "underline" }}
+              >
                 Create an account
               </Link>
             </p>
@@ -181,9 +208,12 @@ export function Login() {
 export function Register() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { addToCart, addToast } = useCart();
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+
+  const pendingItem = location.state?.pendingItem;
 
   function submit(e) {
     e.preventDefault();
@@ -215,8 +245,7 @@ export function Register() {
       JSON.stringify({ name: account.name, email: account.email, phone: account.phone })
     );
 
-    const from = location.state?.from;
-    finishLogin(navigate, from ? `${from.pathname}${from.search}` : undefined);
+    finishLogin(navigate, location, addToCart, addToast);
   }
 
   return (
@@ -241,7 +270,11 @@ export function Register() {
             <Sparkles size={12} /> Register
           </span>
           <h2>Create Account</h2>
-          <p className="desc">Join our shopping community in just a few clicks.</p>
+          <p className="desc">
+            {pendingItem
+              ? `Create your account to add "${pendingItem.title}" to your cart.`
+              : "Join our shopping community in just a few clicks."}
+          </p>
 
           {error && (
             <div className="form-error-banner" style={{ marginBottom: "16px" }}>
@@ -328,8 +361,12 @@ export function Register() {
             </button>
 
             <p style={{ textAlign: "center", fontSize: "14px", color: "var(--slate-500)", marginTop: "12px" }}>
-              Already registered?{" "}
-              <Link to="/login" style={{ color: "var(--brand-700)", fontWeight: 600 }}>
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                state={location.state}
+                style={{ color: "var(--brand-700)", fontWeight: 700, textDecoration: "underline" }}
+              >
                 Sign in here
               </Link>
             </p>

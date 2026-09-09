@@ -120,10 +120,15 @@ export default function Navbar() {
                   <span className="user-chip-name">{userProfile?.name?.split(" ")[0] || "Account"}</span>
                 </Link>
               ) : (
-                <Link to="/login" className="btn btn-primary btn-sm">
-                  <User size={15} />
-                  <span>Sign In</span>
-                </Link>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Link to="/login" className="btn btn-ghost btn-sm">
+                    <User size={15} />
+                    <span>Sign In</span>
+                  </Link>
+                  <Link to="/register" className="btn btn-primary btn-sm">
+                    <span>Register</span>
+                  </Link>
+                </div>
               )}
             </div>
           </nav>
