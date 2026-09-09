@@ -62,7 +62,7 @@ export default function Navbar() {
             </button>
 
             {/* Brand Logo */}
-            <Link to="/" className="nav-brand">
+            <Link to={isLoggedIn ? "/products" : "/"} className="nav-brand">
               <div className="brand-logo-icon">
                 <Sparkles size={18} />
               </div>
@@ -72,18 +72,37 @@ export default function Navbar() {
 
             {/* Desktop Navigation Links */}
             <div className="nav-links-desktop">
-              <NavLink to="/" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")} end>
-                Home
-              </NavLink>
-              <NavLink to="/products" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-                Shop All
-              </NavLink>
-              <NavLink to="/about" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-                About
-              </NavLink>
-              <NavLink to="/contact" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-                Contact
-              </NavLink>
+              {!isLoggedIn ? (
+                <>
+                  <NavLink to="/" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")} end>
+                    Home
+                  </NavLink>
+                  <NavLink to="/products" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                    Shop All
+                  </NavLink>
+                  <NavLink to="/about" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                    About
+                  </NavLink>
+                  <NavLink to="/contact" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                    Contact
+                  </NavLink>
+                </>
+              ) : (
+                <>
+                  <NavLink to="/products" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                    Shop All
+                  </NavLink>
+                  <NavLink to="/wishlist" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                    Wishlist
+                  </NavLink>
+                  <NavLink to="/cart" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                    My Bag ({cartCount})
+                  </NavLink>
+                  <NavLink to="/profile" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                    My Account
+                  </NavLink>
+                </>
+              )}
             </div>
 
             {/* Search Input Bar (Desktop) */}
@@ -168,55 +187,94 @@ export default function Navbar() {
             </form>
 
             <div className="mobile-drawer-links">
-              <NavLink
-                to="/"
-                className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
-                onClick={() => setMobileMenuOpen(false)}
-                end
-              >
-                <span>Home</span>
-                <ChevronRight size={16} />
-              </NavLink>
-              <NavLink
-                to="/products"
-                className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <span>Shop Collection</span>
-                <ChevronRight size={16} />
-              </NavLink>
-              <NavLink
-                to="/wishlist"
-                className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <span>Wishlist ({wishlistCount})</span>
-                <Heart size={16} />
-              </NavLink>
-              <NavLink
-                to="/cart"
-                className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <span>Bag ({cartCount})</span>
-                <ShoppingBag size={16} />
-              </NavLink>
-              <NavLink
-                to="/about"
-                className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <span>About Us</span>
-                <ChevronRight size={16} />
-              </NavLink>
-              <NavLink
-                to="/contact"
-                className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <span>Contact & Support</span>
-                <ChevronRight size={16} />
-              </NavLink>
+              {!isLoggedIn ? (
+                <>
+                  <NavLink
+                    to="/"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                    end
+                  >
+                    <span>Home</span>
+                    <ChevronRight size={16} />
+                  </NavLink>
+                  <NavLink
+                    to="/products"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Shop Collection</span>
+                    <ChevronRight size={16} />
+                  </NavLink>
+                  <NavLink
+                    to="/wishlist"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Wishlist ({wishlistCount})</span>
+                    <Heart size={16} />
+                  </NavLink>
+                  <NavLink
+                    to="/cart"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Bag ({cartCount})</span>
+                    <ShoppingBag size={16} />
+                  </NavLink>
+                  <NavLink
+                    to="/about"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>About Us</span>
+                    <ChevronRight size={16} />
+                  </NavLink>
+                  <NavLink
+                    to="/contact"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Contact & Support</span>
+                    <ChevronRight size={16} />
+                  </NavLink>
+                </>
+              ) : (
+                <>
+                  <NavLink
+                    to="/products"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Shop Collection</span>
+                    <ChevronRight size={16} />
+                  </NavLink>
+                  <NavLink
+                    to="/wishlist"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Wishlist ({wishlistCount})</span>
+                    <Heart size={16} />
+                  </NavLink>
+                  <NavLink
+                    to="/cart"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Bag ({cartCount})</span>
+                    <ShoppingBag size={16} />
+                  </NavLink>
+                  <NavLink
+                    to="/profile"
+                    className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>My Account & Orders</span>
+                    <ChevronRight size={16} />
+                  </NavLink>
+                </>
+              )}
             </div>
 
             <div className="mobile-drawer-footer">

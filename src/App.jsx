@@ -25,14 +25,15 @@ function RequireLogin({ children }) {
 
 export default function App() {
   const { pathname } = useLocation();
+  const isLoggedIn = localStorage.getItem("novamart-user") === "true";
 
   return (
     <>
       <ScrollToTop />
       <Navbar />
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/home" element={<Landing />} />
+        <Route path="/" element={isLoggedIn ? <Navigate to="/products" replace /> : <Landing />} />
+        <Route path="/home" element={isLoggedIn ? <Navigate to="/products" replace /> : <Landing />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
@@ -63,8 +64,8 @@ export default function App() {
             </RequireLogin>
           }
         />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={isLoggedIn ? <Navigate to="/products" replace /> : <About />} />
+        <Route path="/contact" element={isLoggedIn ? <Navigate to="/products" replace /> : <Contact />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
