@@ -21,10 +21,18 @@ export default function Checkout() {
   const { cart, coupon, saveOrder } = useCart();
   const navigate = useNavigate();
 
+  const userProfile = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("novamart-profile") || "null");
+    } catch {
+      return null;
+    }
+  })();
+
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
+    name: userProfile?.name || "",
+    email: userProfile?.email || "",
+    phone: userProfile?.phone || "",
     address: "",
     city: "",
     state: "",

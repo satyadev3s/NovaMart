@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
-import { Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, CheckCircle2, UserCheck } from "lucide-react";
 
 function finishLogin(navigate, location, addToCart, addToast) {
   localStorage.setItem("novamart-user", "true");
@@ -36,30 +36,58 @@ export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { addToCart, addToast } = useCart();
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+
+  const registeredEmail = location.state?.registeredEmail || "";
+  const registeredSuccess = location.state?.registeredSuccess || false;
+
+  const [email, setEmail] = useState(() => {
+    if (registeredEmail) return registeredEmail;
+    try {
+      const lastReg = JSON.parse(localStorage.getItem("novamart-last-registered") || "null");
+      return lastReg?.email || "";
+    } catch {
+      return "";
+    }
+  });
+
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState(
+    registeredSuccess ? "Account created successfully! Enter your password to sign in." : ""
+  );
 
   const pendingItem = location.state?.pendingItem;
+  const accounts = getAccounts();
+
+  useEffect(() => {
+    if (registeredEmail) {
+      setEmail(registeredEmail);
+    }
+  }, [registeredEmail]);
 
   function handleDemoFill() {
     setEmail("alex.morgan@example.com");
-    setPhone("+91 98765 43210");
     setPassword("password123");
     // Ensure the demo account exists in localStorage
-    const accounts = getAccounts();
-    if (!accounts.some((a) => a.email === "alex.morgan@example.com")) {
-      accounts.push({
+    const existing = getAccounts();
+    if (!existing.some((a) => a.email === "alex.morgan@example.com")) {
+      existing.push({
         name: "Alex Morgan",
         email: "alex.morgan@example.com",
         phone: "+91 98765 43210",
         password: "password123",
       });
-      localStorage.setItem("novamart-accounts", JSON.stringify(accounts));
+      localStorage.setItem("novamart-accounts", JSON.stringify(existing));
     }
     setError("");
+  }
+
+  function handleFillAccount(acc) {
+    setEmail(acc.email);
+    setPassword(acc.password);
+    setError("");
+    setSuccessMsg(`Selected account: ${acc.name}`);
   }
 
   function submit(e) {
@@ -68,21 +96,21 @@ export function Login() {
       return setError("Please enter your email and password.");
     }
 
-    const accounts = getAccounts();
-    // Allow either exact match or fallback demo login
-    let account = accounts.find(
+    const currentAccounts = getAccounts();
+    let account = currentAccounts.find(
       (item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.password === password
     );
 
-    // If demo credentials or first time demo
-    if (!account && email.trim() === "alex.morgan@example.com") {
+    // If demo fallback
+    if (!account && email.trim().toLowerCase() === "alex.morgan@example.com" && password === "password123") {
       account = { name: "Alex Morgan", email: "alex.morgan@example.com", phone: "+91 98765 43210" };
     }
 
     if (!account) {
-      return setError("Invalid email or password. Use demo fill button above to test instantly.");
+      return setError("Invalid email or password. Please verify your registered credentials.");
     }
 
+    // Save active logged-in user profile
     localStorage.setItem(
       "novamart-profile",
       JSON.stringify({ name: account.name, email: account.email, phone: account.phone })
@@ -115,17 +143,64 @@ export function Login() {
           <h2>Welcome Back</h2>
           <p className="desc">
             {pendingItem
-              ? `Sign in or register to add "${pendingItem.title}" to your cart.`
-              : "Enter your details to access your account & orders."}
+              ? `Sign in with your registered account to add "${pendingItem.title}" to your cart.`
+              : "Enter your registered credentials to access your account & orders."}
           </p>
 
-          {/* 1-Click Demo Helper */}
-          <div className="demo-account-hint">
-            <span>Fast test? Use preloaded demo account.</span>
-            <button type="button" onClick={handleDemoFill}>
-              1-Click Demo Fill
-            </button>
-          </div>
+          {/* Success Banner if redirected from registration */}
+          {successMsg && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                backgroundColor: "var(--brand-50)",
+                border: "1px solid var(--brand-500)",
+                color: "var(--brand-900)",
+                padding: "10px 14px",
+                borderRadius: "var(--radius-md)",
+                fontSize: "13px",
+                marginBottom: "16px",
+              }}
+            >
+              <CheckCircle2 size={16} color="var(--brand-600)" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          {/* Registered Accounts Quick-Access Chips */}
+          {accounts.length > 0 && (
+            <div style={{ marginBottom: "18px", background: "var(--slate-50)", padding: "12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, color: "var(--slate-700)", marginBottom: "8px" }}>
+                <UserCheck size={14} color="var(--brand-600)" />
+                <span>Saved / Registered Accounts:</span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {accounts.map((acc) => (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: "11px", padding: "4px 8px", backgroundColor: "var(--white)" }}
+                    onClick={() => handleFillAccount(acc)}
+                    title={`Click to fill ${acc.email}`}
+                  >
+                    <span>{acc.name} ({acc.email})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 1-Click Demo Helper if no custom accounts yet */}
+          {accounts.length === 0 && (
+            <div className="demo-account-hint">
+              <span>Fast test? Use preloaded demo account.</span>
+              <button type="button" onClick={handleDemoFill}>
+                1-Click Demo Fill
+              </button>
+            </div>
+          )}
 
           {error && (
             <div className="form-error-banner" style={{ marginBottom: "16px" }}>
@@ -143,16 +218,6 @@ export function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Phone Number (Optional)</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 98765 43210"
               />
             </div>
 
@@ -189,13 +254,13 @@ export function Login() {
             </button>
 
             <p style={{ textAlign: "center", fontSize: "14px", color: "var(--slate-500)", marginTop: "12px" }}>
-              New to NovaMart?{" "}
+              Need a new account?{" "}
               <Link
                 to="/register"
                 state={location.state}
                 style={{ color: "var(--brand-700)", fontWeight: 700, textDecoration: "underline" }}
               >
-                Create an account
+                Register here
               </Link>
             </p>
           </form>
@@ -208,7 +273,7 @@ export function Login() {
 export function Register() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addToCart, addToast } = useCart();
+  const { addToast } = useCart();
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -229,7 +294,7 @@ export function Register() {
 
     const accounts = getAccounts();
     if (accounts.some((a) => a.email.toLowerCase() === form.email.trim().toLowerCase())) {
-      return setError("An account with this email address already exists.");
+      return setError("An account with this email address already exists. Please sign in.");
     }
 
     const account = {
@@ -239,13 +304,22 @@ export function Register() {
       password: form.password,
     };
 
+    // Save to accounts list
     localStorage.setItem("novamart-accounts", JSON.stringify([...accounts, account]));
-    localStorage.setItem(
-      "novamart-profile",
-      JSON.stringify({ name: account.name, email: account.email, phone: account.phone })
-    );
+    // Save last registered for instant prefill
+    localStorage.setItem("novamart-last-registered", JSON.stringify(account));
 
-    finishLogin(navigate, location, addToCart, addToast);
+    addToast(`Account created for ${account.name}! Please sign in.`, "success");
+
+    // Redirect to login with registered credentials prefilled
+    navigate("/login", {
+      replace: true,
+      state: {
+        ...location.state,
+        registeredEmail: account.email,
+        registeredSuccess: true,
+      },
+    });
   }
 
   return (
@@ -272,8 +346,8 @@ export function Register() {
           <h2>Create Account</h2>
           <p className="desc">
             {pendingItem
-              ? `Create your account to add "${pendingItem.title}" to your cart.`
-              : "Join our shopping community in just a few clicks."}
+              ? `Create your account to access and add "${pendingItem.title}" to your cart.`
+              : "Register your account to shop, save wishlist items, and track orders."}
           </p>
 
           {error && (
@@ -356,12 +430,12 @@ export function Register() {
             </div>
 
             <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: "8px" }}>
-              <span>Create Account</span>
+              <span>Register & Continue to Sign In</span>
               <ArrowRight size={16} />
             </button>
 
             <p style={{ textAlign: "center", fontSize: "14px", color: "var(--slate-500)", marginTop: "12px" }}>
-              Already have an account?{" "}
+              Already registered?{" "}
               <Link
                 to="/login"
                 state={location.state}
